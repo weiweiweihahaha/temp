@@ -1,0 +1,1306 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="grid-layout">
+    <!-- 模块1：水质概览 -->
+<!-- 模块1：水质概览 -->
+<div class="grid-item area1">
+    <div class="water-overview">
+        <div class="overview-title">
+            环境数据评分
+          </div>
+      <!-- 半环形仪表盘 -->
+      <div id="waterQualityGauge" class="gauge-container"></div>
+      <!-- 一键刷新 -->
+      <button id="refreshBtn" class="refresh-btn">重新检测</button>
+      <!-- 4 个指标卡片 -->
+      <div class="quality-cards">
+        <div class="card">
+          <div class="card-icon">🌡️</div>
+          <div class="card-label">水温</div>
+          <div class="card-value" id="tempVal">24°C</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">💧</div>
+          <div class="card-label">溶解氧</div>
+          <div class="card-value" id="doVal">8.5 mg/L</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">⚗️</div>
+          <div class="card-label">pH 值</div>
+          <div class="card-value" id="phVal">7.2</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🌫️</div>
+          <div class="card-label">浊度</div>
+          <div class="card-value" id="turbVal">4 NTU</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+    <!-- 模块2 -->
+<div class="grid-item area2" style="overflow:hidden;">
+    <div class="module2">
+      <!-- 上排：三张等宽卡片 -->
+      <div class="stats-cards">
+        <!-- 卡片1：鱼群总量 + 新增/死亡 -->
+        <div class="stat-card">
+          <h5>鱼群总量</h5>
+          <p class="stat-value">159 尾</p>
+          <div class="stat-badges">
+            <div class="badge-title">今日新增/死亡:</div>
+            <span class="badge add">+38</span>
+            <span class="badge dead">-6</span>
+          </div>
+        </div>
+  
+        <!-- 卡片2：鱼种概况 -->
+        <div class="stat-card">
+          <h5>鱼种概况</h5>
+          <p class="stat-value">7 种</p>
+        </div>
+  
+        <!-- 卡片3：设备在线 -->
+        <div class="stat-card">
+            <h5>设备在线</h5>
+            <div class="stat-badges-grid">
+              <div class="device-box">摄像头 6</div>
+              <div class="device-box">云台 2</div>
+              <div class="device-box">声呐 1</div>
+              <div class="device-box">传感器 12</div>
+            </div>
+          </div>
+      </div>
+  
+      <!-- 下排：翻页时钟 -->
+      <div class="clock-panel">
+        <div class="clock-title">已保障养殖鱼群:</div>
+        <div id="protectedFishClock"></div>
+        <div class="clock-unit">尾</div>
+      </div>
+    </div>
+  </div>
+  
+      
+      <!-- 模块3：硬件面板 -->
+    <div class="grid-item area3">
+        <div class="panel-container">
+        <!-- 左侧：网箱信息 -->
+        <div class="panel-box">
+            <div class="panel-header">
+            <img 
+                src="{{ url_for('static', filename='网箱养殖.png') }}" 
+                alt="网箱图标" 
+                class="panel-icon">
+            <span class="panel-title">网箱信息</span>
+            </div>
+            <ul class="info-list">
+                <li>网箱长度：<span class="dynamic-value">100m</span></li>
+                <li>网箱宽度：<span class="dynamic-value">50m</span></li>
+                <li>网箱深度：<span class="dynamic-value">30m</span></li>
+                <li>网箱经度：<span class="dynamic-value">128.034</span></li>
+                <li>网箱纬度：<span class="dynamic-value">56.123</span></li>
+            </ul>
+        </div>
+        
+        <!-- 右侧：水底传感器信息 -->
+        <!-- <div class="panel-box">
+            <div class="panel-header">
+            <img 
+                src="{{ url_for('static', filename='传感器.png') }}" 
+                alt="传感器图标" 
+                class="panel-icon">
+            <span class="panel-title">水底传感器</span>
+            </div>
+            <ul class="info-list">
+            <li>运行时间：24天13小时43分钟</li>
+            <li>下次检修：35天后</li>
+            <li>保修过期：2035年02月01日</li>
+            </ul>
+        </div> -->
+
+        <div class="panel-box">
+            <div class="panel-header">
+              <img src="{{ url_for('static', filename='传感器.png') }}"
+                   alt="传感器" class="panel-icon">
+              <span class="panel-title">水底传感器</span>
+            </div>
+            <ul class="info-list">
+              <li>
+                <span class="flip-label">运行时间(天/小时/分钟)：</span>
+                <div id="runtimeClock" class="digital-clock">
+                  <span class="dc-unit" id="rt-days">00</span>
+                  <span class="separator">:</span>
+                  <span class="dc-unit" id="rt-hours">00</span>
+                  <span class="separator">:</span>
+                  <span class="dc-unit" id="rt-mins">00</span>
+                </div>
+              </li>
+              <li>
+                <span class="flip-label">下次检修(天/小时/分钟)：</span>
+                <div id="serviceClock" class="digital-clock">
+                    <span class="dc-unit" id="sv-days">00</span><span class="separator">:</span>
+                    <span class="dc-unit" id="sv-hours">00</span><span class="separator">:</span>
+                    <span class="dc-unit" id="sv-mins">00</span>
+                </div>
+              </li>
+              <li>
+                <span class="flip-label">保修到期(天/小时/分钟)：</span>
+                <div id="warrantyClock" class="digital-clock">
+                    <span class="dc-unit" id="wr-days">00</span><span class="separator">:</span>
+                    <span class="dc-unit" id="wr-hours">00</span><span class="separator">:</span>
+                    <span class="dc-unit" id="wr-mins">00</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+          
+        </div>
+    </div>
+
+    <!-- 模块4：流图 -->
+  <div class="grid-item area4" style="position: relative; overflow: hidden;">
+    <!-- 标题 -->
+    <h3 class="chart-title" style="
+         position: absolute;
+         top: 8px;
+         left: 50%;
+         transform: translateX(-50%);
+         color: #fff;
+         z-index: 10;
+    ">
+      鱼群数量历史流图
+    </h3>
+    <!-- 流图容器，下方留出标题高度 -->
+    <div id="streamgraph" style="
+         position: absolute;
+         top: 40px;
+         left: 0;
+         right: 0;
+         bottom: 0;
+    "></div>
+  </div>
+
+      <!-- 模块5：3D 气泡图 + 底部菜单 -->
+    <div class="grid-item area5" style="position: relative; overflow: visible;">
+        <!-- 标题 -->
+        <h3 class="chart-title" 
+            style="position: absolute; top:2px; left:50%; transform: translateX(-50%); z-index:10;">
+        鱼群生长情况气泡图
+        </h3>
+
+       <!-- 侧边垂直菜单 -->
+        <div class="bubble-menu" style="
+        position: absolute;
+        top: 50%;                   /* 垂直方向中间 */
+        right: 15px;                 /* 距离右侧 15px */
+        transform: translateY(-50%);/* 垂直居中校正 */
+        display: flex;
+        flex-direction: column;     /* 改为垂直排列 */
+        gap: 6px;
+        z-index: 10;
+        ">
+        {% for sp in species_list %}
+        <button class="bubble-btn" data-species="{{ sp }}" style="
+            padding:4px 8px;
+            background:#004080;
+            color:#fff;
+            border:none;
+            border-radius:4px;
+            cursor:pointer;
+            font-size:12px;
+        ">
+        {{ sp }}
+        </button>
+        {% endfor %}
+        </div>
+
+        <!-- 3D 图容器 -->
+        <div id="bubble3D" style="width:100%; height:100%;"></div>
+    </div>
+
+  <!-- 模块6：饼图 ... -->
+    <div class="grid-item area6"> 
+        <div class="species-chart">
+            <h3 class="chart-title">鱼群种类占比</h3>
+            <!-- <div id="speciesPie" style="width: 350px; height: 200px; margin: auto;"></div> -->
+             <div id="speciesPie" style="width:100%; height:100%;"></div>
+          </div>
+    </div>
+</div>
+
+<style>
+/* 内容区域样式 */
+.content {
+    padding: 5px;
+    background: transparent;  /* 强制透明背景 */
+    border-radius: 5px;
+}
+
+#time-display {
+    font-family: monospace;      /* 等宽字体 */
+    display: inline-block;
+    width: 80px;                 /* 预留足够空间固定宽度 */
+    text-align: center;
+}
+
+#date-display {
+    font-family: monospace;
+    width: 100px;
+    display: inline-block;
+    text-align: center;
+}
+
+.grid-layout {
+    display: grid;
+    grid-template-columns: 2fr 3fr 2fr;  /* 左中右：中间列更宽 */
+    grid-template-rows: 1fr 1fr;         /* 上下两行等高 */
+    grid-template-areas:
+        "area1 area2 area3"
+        "area4 area5 area6";
+    gap: 10px;
+    height: 89vh;
+    padding: 10px;
+}
+
+.grid-item {
+    background: transparent;
+    /* 青蓝色实线边框 */
+    border: 1px solid #00C3FF;
+    /* 内外两层发光阴影：内侧小光晕 + 外侧大光晕 */
+    box-shadow:
+      0 0 6px rgba(0, 195, 255, 0.8),   /* 紧贴边框的强烈内光 */
+      0 0 20px rgba(0, 195, 255, 0.5);  /* 扩散更远的柔和外光 */
+    border-radius: 8px;
+    padding: 2px;
+    padding: 2px;
+    color: white;
+    font-family: "Orbitron", "Noto Sans SC", sans-serif;
+    font-size: 16px;
+} */
+
+.grid-item {
+    background: transparent;
+    /* 青蓝色实线边框 */
+    border: 1px solid #00C3FF;
+    /* 内外两层发光阴影：内侧小光晕 + 外侧大光晕 */
+    box-shadow:
+      0 0 6px rgba(0, 195, 255, 0.8),   /* 紧贴边框的强烈内光 */
+      0 0 20px rgba(0, 195, 255, 0.5);  /* 扩散更远的柔和外光 */
+    border-radius: 8px;
+    padding: 2px;
+    color: white;
+    font-family: "Orbitron", "Noto Sans SC", sans-serif;
+    font-size: 16px;
+}
+
+/* 对应区域名称设置 */
+.area1 { grid-area: area1; }
+.area2 { grid-area: area2; }
+.area3 { grid-area: area3; }
+.area4 { grid-area: area4; }
+.area5 { grid-area: area5; }
+.area6 { grid-area: area6; }
+
+/* 鱼群种类占比环形图 */
+/* .species-chart {
+    text-align: center;
+    padding: 10px;
+    color: white;
+  } */
+  
+  .chart-title {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #ffffff;
+    text-shadow: 0 0 3px #00ffff;
+  } 
+
+/* 去掉内边距，只给标题留空间 */
+.species-chart {
+    text-align: center;
+    padding-top: 10px;    /* 只在上方给点空隙 */
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    height: 100%;         /* 确保填满整个 area6 */
+    box-sizing: border-box;
+}
+
+/* 让图表容器真正占满父元素减去标题高度 */
+#speciesPie {
+    width: 100%;
+    height: calc(100% - 10px); /* 标题高度约 30px，可根据实际微调 */
+}
+
+/* 模块3 容器：左右并排 */
+.area3 .panel-container {
+    display: flex;
+    gap: 10px;
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  
+  /* 每个信息面板 */
+  .area3 .panel-box {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(6px);
+    border-radius: 8px;
+    padding: 12px;
+    box-sizing: border-box;
+  }
+  
+  /* 面板标题行 */
+  .area3 .panel-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  /* 图标样式 */
+  .area3 .panel-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 6px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 4px #00c3ff);
+  }
+  
+  /* 标题文字 */
+  .area3 .panel-title {
+    font-size: 16px;
+    color: #00c3ff;
+    border: 1px solid #00c3ff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+  }
+  
+  /* 信息列表 */
+  .area3 .info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: #fff;
+    font-size: 14px;
+  }
+  .area3 .info-list li {
+    margin: 6px 0;
+  }
+
+  /* 时钟 */
+  
+ /* 让 flip-item 横向占满整行 */
+/* 列表项内对齐 */
+/* .area3 .info-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+  } */
+  
+  /* 标签 */
+  .flip-label {
+    color: #fff;
+    font-size: 14px;
+    min-width: 80px;
+  }
+  
+  /* 数字时钟容器 */
+  .digital-clock {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  /* “天:时:分”统一外观 */
+  .dc-unit {
+    flex: none;           /* 固定宽度 */
+    width: 48px;          /* 固定宽度根据最长数字调整 */
+    height: 32px;
+    line-height: 32px;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    color: #00faff;
+    background: rgba(0,0,0,0.5);
+    border-radius: 4px;
+    text-align: center;
+    box-shadow: 0 0 4px rgba(0,255,255,0.8);
+  }
+  
+  /* 只作用于“冒号” */
+  .separator {
+    flex: none;
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .dynamic-value {
+    display: inline-block;
+    padding: 1px 1px;
+    border: 1px solid #00c3ff;
+    border-radius: 1px;
+    background: rgba(0, 195, 255, 0.1);
+    color: #bd70e1;
+    font-weight: bold;
+    min-width: 40px;  /* 确保对齐 */
+    text-align: center;
+  }
+
+
+
+
+
+/* 鱼群种类占比环形图 */
+/* .species-chart {
+    text-align: center;
+    padding: 10px;
+    color: white;
+  } */
+  
+  .chart-title {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #ffffff;
+    text-shadow: 0 0 3px #00ffff;
+  } 
+
+/* 去掉内边距，只给标题留空间 */
+.species-chart {
+    text-align: center;
+    padding-top: 10px;    /* 只在上方给点空隙 */
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    height: 100%;         /* 确保填满整个 area6 */
+    box-sizing: border-box;
+}
+
+/* 让图表容器真正占满父元素减去标题高度 */
+#speciesPie {
+    width: 100%;
+    height: calc(100% - 10px); /* 标题高度约 30px，可根据实际微调 */
+}
+
+/* 模块3 容器：左右并排 */
+.area3 .panel-container {
+    display: flex;
+    gap: 10px;
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  
+  /* 每个信息面板 */
+  .area3 .panel-box {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(6px);
+    border-radius: 8px;
+    padding: 12px;
+    box-sizing: border-box;
+  }
+  
+  /* 面板标题行 */
+  .area3 .panel-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  /* 图标样式 */
+  .area3 .panel-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 6px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 4px #00c3ff);
+  }
+  
+  /* 标题文字 */
+  .area3 .panel-title {
+    font-size: 16px;
+    color: #00c3ff;
+    border: 1px solid #00c3ff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+  }
+  
+  /* 信息列表 */
+  .area3 .info-list {
+    list-style: none;
+    padding: 0;
+    margin: 1px;
+    color: #fff;
+    font-size: 14px;
+  }
+  .area3 .info-list li {
+    margin: 20px 0;
+  }
+
+  /* 时钟 */
+  
+ /* 让 flip-item 横向占满整行 */
+/* 列表项内对齐 */
+/* .area3 .info-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+  } */
+  
+  /* 标签 */
+  .flip-label {
+    color: #fff;
+    font-size: 14px;
+    min-width: 80px;
+  }
+  
+  /* 数字时钟容器 */
+  .digital-clock {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  /* “天:时:分”统一外观 */
+  .dc-unit {
+    flex: none;           /* 固定宽度 */
+    width: 48px;          /* 固定宽度根据最长数字调整 */
+    height: 32px;
+    line-height: 32px;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    color: #00faff;
+    background: rgba(0,0,0,0.5);
+    border-radius: 4px;
+    text-align: center;
+    box-shadow: 0 0 4px rgba(0,255,255,0.8);
+  }
+  
+  /* 只作用于“冒号” */
+  .separator {
+    flex: none;
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .dynamic-value {
+    display: inline-block;
+    padding: 1px 1px;
+    border: 1px solid #00c3ff;
+    border-radius: 1px;
+    background: rgba(0, 195, 255, 0.1);
+    color: #bd70e1;
+    font-weight: bold;
+    min-width: 40px;  /* 确保对齐 */
+    text-align: center;
+  }
+
+  /* ---- 模块1：水质概览 ---- */
+
+  /* area1 容器里的小标题 */
+.water-overview .overview-title {
+    color: #e0eef2;           /* 发光的蓝色 */
+    font-size: 16px;          /* 字号 */
+    font-weight: bold;        /* 加粗 */
+    text-align: center;       /* 居中 */
+    margin-top: 12px;       /* 标题和仪表盘之间留点空隙 */
+    text-shadow: 0 0 6px rgba(0,195,255,0.8); /* 发光效果 */
+  }
+/* ---- 模块1：水质概览 ---- */
+.water-overview {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;  
+    height:auto; 
+    box-sizing: border-box;
+    padding: 1px;
+    gap: 0px;
+  }
+  
+  .gauge-container {
+    position: absolute;    /* ② 切换到绝对定位 */
+    top: 7px;              /* ③ 距离父容器顶边 8px */
+    height: 300px;
+    width: 280px;
+    margin-bottom: 0;
+  }
+  
+  .refresh-btn {
+    position: absolute;    /* ② 切换到绝对定位 */
+    top: 210px;              /* ③ 距离父容器顶边 8px */
+    margin: 0;
+    padding: 0px 16px;
+    background: #0fcb5e;
+    border: none;
+    border-radius: 20px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(15,203,94,0.5);
+  }
+
+  .refresh-btn:hover {
+    background: #0daa50;
+  }
+  
+  .quality-cards { 
+    position: absolute;    /* ② 切换到绝对定位 */
+    top: 250px;              /* ③ 距离父容器顶边 8px */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;                  /* 缩小一点间距 */
+    width: 100%;
+    flex: 0 0 60%;             /* 让它只占父容器高度的 30% */
+    align-self: flex-start;    /* 顶部对齐，避免居中后卡片漂浮 */
+  }
+
+  .card {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 2px;
+    padding: 2px;
+    text-align: center;
+    color: #fff;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center; /* 从左往右排列，可改成 center 居中 */
+    gap: 6px;                 /* 图标和文字之间留 6px */
+  }
+  
+  .card-icon {
+    font-size: 16px;
+    margin-bottom: 0px;
+  }
+  
+  .card-label {
+    font-size: 12px;
+    margin-bottom: 0px;
+  }
+  
+  .card-value {
+    font-size: 10px;
+    font-weight: bold;
+  } 
+
+
+  /* 整个模块2 的容器，用列方向 */
+/* 整体布局 */
+.module2 { display: flex; flex-direction: column; height:100%; gap:16px; padding:12px; }
+
+/* —— 上排三卡片 —— */
+.stats-cards { display: flex; gap:12px; }
+.stat-card {
+  flex: 1;
+  background: rgba(0,20,50,0.6);
+  border: 1px solid #00c3ff;
+  border-radius:8px;
+  padding:12px;
+  box-shadow: 0 0 8px rgba(0,195,255,0.4);
+  color:#fff;
+}
+.stat-card h5 {
+  margin:0 0 8px;
+  font-size:14px;
+  color:#00faff;
+  text-shadow:0 0 6px #00faff;
+}
+/* 主要数据 呼吸发光 + 缩放 */
+.stat-value {
+  margin:0;
+  font-size:24px;
+  font-weight:bold;
+  animation: pulse-neon 2s ease-in-out infinite,
+             scale-neon 3s ease-in-out infinite;
+}
+.stat-sub { display:none; } /* 不再用 */
+
+.stat-badges {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: row;  /* 先小标题，再徽章横排 */
+    align-items: center;
+    gap: 4px;
+}
+
+/* 每个设备的小格子 */
+/* 设备在线卡片内的四格网格 */
+.stat-badges-grid {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 一行四列 */
+    gap: 12px;
+  }
+
+  
+  /* 设备小格统一等宽等高 */
+  .device-box {
+    background: rgba(0, 195, 255, 0.2);
+    border: 1px solid #00c3ff;
+    border-radius: 8px;
+    padding: 12px 0;
+    text-align: center;
+    color: #0ff;
+    font-size: 12px;
+    width: 70px;     /* 根据需要调小 */
+    height: 20px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* 今日新增／死亡 的小标题 */
+  .badge-title {
+    font-size: 12px;
+    color: #a0e0ff;
+    text-shadow: 0 0 4px rgba(0,195,255,0.6);
+}
+
+/* 新增/死亡 徽章 */
+.badge {
+  padding:2px 6px;
+  border-radius:4px;
+  font-size:11px;
+  animation: float-updown 2s ease-in-out infinite;
+}
+.badge.add   { background:rgba(0,255,0,0.2); color:#0f0; }
+.badge.dead  { background:rgba(255,0,0,0.2); color:#f00; }
+/* 设备徽章 和上面同大小 */
+.badge.device {
+  background: rgba(0,195,255,0.2);
+  color: #0ff;
+  animation: pulse-neon 2s infinite;
+}
+
+/* 呼吸发光阴影 */
+@keyframes pulse-neon {
+  0%,100% { text-shadow:0 0 6px rgba(0,195,255,0.6); }
+  50%     { text-shadow:0 0 20px rgba(0,195,255,0.9); }
+}
+/* 轻微放大再恢复 */
+@keyframes scale-neon {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.05); }
+}
+/* 徽章上下漂浮 */
+@keyframes float-updown {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-4px); }
+}
+
+/* —— 下排翻页时钟 —— */
+.clock-panel {
+  background: transparent;
+  border:none;
+  border-radius:8px;
+  padding:0px;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:center;
+}
+
+
+.clock-title {
+  color:#00faff;
+  font-size:18px;
+  margin:0px;
+  text-shadow:0 0 6px #00faff;
+}
+
+.clock-unit {
+  margin:0px;
+  color:#a0e0ff;
+  font-size:14px;
+}
+
+</style>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+<script>
+  // 从后端注入的数据
+  const speciesData  = {{ species_data  | tojson }};
+  const totalCount   = {{ species_total | tojson }};
+
+  const speciesPie = echarts.init(document.getElementById('speciesPie'));
+  speciesPie.setOption({
+    title: [{
+        text: '总数\n' + totalCount,
+      left: 'center',
+      top: 'center',
+      textStyle: { color: '#aaa', fontSize: 20, lineHeight: 28 }
+    }],
+    tooltip: { trigger: 'item', formatter: '{b}<br/>{c} ({d}%)' },
+    legend: { show: false },
+    series: [{
+      name: '鱼群种类',
+      type: 'pie',
+      radius: ['40%', '90%'],
+      avoidLabelOverlap: false,      // 不隐藏任何标签
+      labelLayout: {            // 强制所有标签不重叠隐藏
+        hideOverlap: false
+      },
+      // 最小扇区角度，保证非常小的扇区也能分到空间
+      minAngle: 5,
+      label: {
+        show: true,
+        position: 'inside',
+        formatter: '{b} {c} ({d}%)',
+        color: '#fff',
+        fontSize: 12
+      },
+      labelLine: {
+        show: true,
+        length: 15,
+        length2: 10,
+        lineStyle: { color: '#88cfff' }
+      },
+      data: speciesData,
+      color: ['#f56a42','#e2435f','#fba62f','#1ab394','#8c8cff','#429bf5','#ffcc00','#00ccff']
+    }]
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts-gl/dist/echarts-gl.min.js"></script>
+<script>
+  const allFish     = {{ fish_records | tojson }};
+  const speciesList = {{ species_list  | tojson }};
+
+  // 初始化 3D 气泡图
+  const chart3D = echarts.init(document.getElementById('bubble3D'));
+  chart3D.setOption({
+    tooltip: {
+      textStyle: { color: '#fff' },
+      backgroundColor: 'rgba(0,0,0,0.7)',
+      formatter: p =>
+        `Species: ${p.data[3]}<br/>` +
+        `Weight: ${p.data[0].toFixed(1)} g<br/>` +
+        `Length: ${p.data[1].toFixed(1)} cm<br/>` +
+        `Width: ${p.data[2].toFixed(1)} cm`
+    },
+    // 轴线与网格
+    xAxis3D: {
+      name: 'Weight (g)',
+      nameTextStyle: { color: '#fff' },
+      axisLine: { lineStyle: { color: '#fff', width: 2 } },
+      axisLabel: { color: '#fff' },
+      splitLine: { lineStyle: { color: '#888', width: 1, opacity: 0.3 } },
+      axisTick: { lineStyle: { color: '#fff', width: 1 } }
+    },
+    yAxis3D: {
+      name: 'Length (cm)',
+      nameTextStyle: { color: '#fff' },
+      axisLine: { lineStyle: { color: '#fff', width: 2 } },
+      axisLabel: { color: '#fff' },
+      splitLine: { lineStyle: { color: '#888', width: 1, opacity: 0.3 } },
+      axisTick: { lineStyle: { color: '#fff', width: 1 } }
+    },
+    zAxis3D: {
+      name: 'Width (cm)',
+      nameTextStyle: { color: '#fff' },
+      axisLine: { lineStyle: { color: '#fff', width: 2 } },
+      axisLabel: { color: '#fff' },
+      splitLine: { lineStyle: { color: '#888', width: 1, opacity: 0.3 } },
+      axisTick: { lineStyle: { color: '#fff', width: 1 } }
+    },
+    // 3D 场景光照与后期特效
+    grid3D: {
+      viewControl: { autoRotate: false },
+      light: {
+        main: { intensity: 1.2, shadow: true },
+        ambient: { intensity: 0.4 }
+      },
+      postEffect: {
+        enable: true,
+        bloom: { enable: true, bloomIntensity: 0.4 }
+      }
+    },
+    series: [{
+      type: 'scatter3D',
+      shading: 'realistic',               // 开启真实光照材质
+      symbolSize: 12,                     // 气泡再放大
+      realisticMaterial: {
+        roughness: 0.3,                   // 粗糙度
+        metalness: 0.7                    // 金属感
+      },
+      itemStyle: {
+        color: '#00d2ff',
+        opacity: 0.9
+      },
+      data: []                            // 由 updateBubble 填充
+    }]
+  });
+
+  // 更新气泡图数据
+  function updateBubble(species) {
+    const data = allFish
+      .filter(f => f.species === species)
+      .map(f => [
+        f.weight,
+        f.length,
+        f.width,
+        f.species
+      ]);
+    chart3D.setOption({ series: [{ data }] });
+  }
+
+
+  // 3. 菜单按钮绑定
+  document.querySelectorAll('.bubble-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // 重置所有按钮样式
+      document.querySelectorAll('.bubble-btn')
+              .forEach(b => b.style.background = '#004080');
+      btn.style.background = '#00c3ff';
+      // 手动切换后：暂停自动切换 10 秒
+      pauseAuto();
+      const sp = btn.dataset.species;
+      // 找到这个 species 在 speciesList 数组里的下标
+      currentIdx = speciesList.indexOf(sp);
+      updateBubble(btn.dataset.species);
+    });
+  });
+
+  // 4. 自动切换逻辑
+  let currentIdx = 0;
+  let autoTimer  = null;
+  let resumeTimer= null;
+
+  function highlightSpeciesBtn(species) {
+  document.querySelectorAll('.bubble-btn').forEach(btn => {
+    btn.style.background = (btn.dataset.species === species)
+                           ? '#00c3ff'
+                           : '#004080';
+  });
+}
+
+function autoSwitch() {
+  currentIdx = (currentIdx + 1) % speciesList.length;
+  const sp = speciesList[currentIdx];
+  highlightSpeciesBtn(sp);
+  updateBubble(sp);
+}
+
+  function startAuto() {
+    // 每 2 秒自动切换
+    autoTimer = setInterval(autoSwitch, 2000);
+  }
+
+  function pauseAuto() {
+    // 清除当前自动切换
+    clearInterval(autoTimer);
+    clearTimeout(resumeTimer);
+    // 5秒后恢复自动切换
+    resumeTimer = setTimeout(startAuto, 5000);
+  }
+
+  // 5. 页面加载时默认展示第一个，并启动自动切换
+  window.onload = () => {
+    const first = speciesList[0];
+    const btn   = document.querySelector(`.bubble-btn[data-species="${first}"]`);
+    btn.style.background = '#00c3ff';
+    updateBubble(first);
+    // 启动自动切换
+    startAuto();
+  };
+</script>
+
+<script>
+    function pad(v){ return String(v).padStart(2,'0'); }
+  
+    // －－ 运行时间（精确到分钟） －－
+    const startOffsetMin = 24*24 + 13*1 + 43; 
+    const startTimeMs    = Date.now() - startOffsetMin*60*1000;
+    function updateRuntime(){
+      let m = Math.floor((Date.now()-startTimeMs)/60000);
+      const days = Math.floor(m/(60*24)); m %= (60*24);
+      const hrs  = Math.floor(m/60); m %= 60;
+      document.getElementById('rt-days' ).textContent = pad(days);
+      document.getElementById('rt-hours').textContent = pad(hrs);
+      document.getElementById('rt-mins' ).textContent = pad(m);
+    }
+    updateRuntime(); setInterval(updateRuntime,60000);
+  
+    // －－ 下次检修倒计时 －－
+    let svcSec = 35*24*3600;
+    function updateService(){
+      if(svcSec<0) svcSec=0;
+      let t = svcSec;
+      const days = Math.floor(t/86400); t %= 86400;
+      const hrs  = Math.floor(t/3600);  t %= 3600;
+      const mins = Math.floor(t/60);
+      document.getElementById('sv-days' ).textContent = pad(days);
+      document.getElementById('sv-hours').textContent = pad(hrs);
+      document.getElementById('sv-mins' ).textContent = pad(mins);
+      svcSec--;
+    }
+    updateService(); setInterval(updateService,1000);
+  
+    // －－ 保修到期倒计时 －－
+    let wrSec = Math.max(0,
+      Math.floor((new Date(2035,1,1).getTime()-Date.now())/1000)
+    );
+    function updateWarranty(){
+      if(wrSec<0) wrSec=0;
+      let t = wrSec;
+      const days = Math.floor(t/86400); t %= 86400;
+      const hrs  = Math.floor(t/3600);  t %= 3600;
+      const mins = Math.floor(t/60);
+      document.getElementById('wr-days' ).textContent = pad(days);
+      document.getElementById('wr-hours').textContent = pad(hrs);
+      document.getElementById('wr-mins' ).textContent = pad(mins);
+      wrSec--;
+    }
+    updateWarranty(); setInterval(updateWarranty,1000);
+  </script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+<script>
+(function(){
+  const chart = echarts.init(document.getElementById('streamgraph'));
+
+  // ① 最近 24 个月的 Date 对象数组
+  const times = [];
+  const today = new Date();
+  for (let i = 23; i >= 0; i--) {
+    times.push(new Date(today.getFullYear(), today.getMonth() - i, 1));
+  }
+
+  // ② 七种鱼 & 对应明艳色（不透明）
+  const species = ['Bream','Roach','Whitefish','Parkki','Perch','Pike','Smelt'];
+  const colors = [
+  '#FF7F50', // Perch（珊瑚橙）
+  '#EC407A', // Bream（粉红）
+  '#FFA726', // Roach（亮黄橙）
+  '#26A69A', // Pike（薄荷青）
+  '#7E57C2', // Smelt（柔和紫）
+  '#29B6F6', // Whitefish（天蓝）
+  '#FFEA00'  // Parkki（明黄）
+];
+
+  // ③ 构造 riverData，格式 [时间戳, 数量, 鱼种]
+  const riverData = [];
+  species.forEach(name => {
+    times.forEach(d => {
+      riverData.push([
+        d.getTime(),
+        Math.round(20 + Math.random() * 180), 
+        name
+      ]);
+    });
+  });
+
+  // ④ 重新渲染
+  chart.setOption({
+    color: colors,
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' }
+    },
+    legend: {
+      data: species,
+      top: 30,
+      textStyle: { color:'#fff' }
+    },
+    singleAxis: {
+      top: 60,
+      bottom: 60,
+      axisPointer: { animation: true },
+      type: 'time',
+      axisLine: { lineStyle:{ color:'#888' } },
+      axisLabel: { color:'#fff' },
+      data: times
+    },
+    series: [{
+      type: 'themeRiver',
+      singleAxisIndex: 0,
+      data: riverData,
+      itemStyle: { opacity: 1 }
+    }],
+    dataZoom: [{
+      type: 'slider',
+      singleAxisIndex: 0,
+      filterMode: 'weakFilter',
+      top: '85%',
+      start: 0,
+      end: 50,
+      height: 12,
+      handleStyle: { color:'#fff' },
+      backgroundColor: 'rgba(0,0,0,0.3)',
+      fillerColor: 'rgba(255,255,255,0.4)',
+      dataBackground: {
+        lineStyle:{ color:'#555' },
+        areaStyle:{ color:'rgba(255,255,255,0.2)' }
+      }
+    }]
+  });
+
+  window.addEventListener('resize', ()=> chart.resize());
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+<script>
+(function(){
+  // 初始化仪表盘
+  const gaugeChart = echarts.init(
+    document.getElementById('waterQualityGauge')
+  );
+
+  // 默认数据
+  let data = {
+    score: 81,       // 水质得分
+    temp: 24,        // 水温 °C
+    do: 8.5,         // 溶解氧 mg/L
+    ph: 7.2,         // pH 值
+    turb: 4          // 浊度 NTU
+  };
+
+  // 渲染函数
+  function render() {
+    // 更新卡片数值
+    document.getElementById('tempVal').textContent = data.temp + '°C';
+    document.getElementById('doVal').textContent   = data.do   + ' mg/L';
+    document.getElementById('phVal').textContent   = data.ph;
+    document.getElementById('turbVal').textContent = data.turb + ' NTU';
+
+    // 仪表盘配置
+    gaugeChart.setOption({
+      series: [{
+        type: 'gauge',
+        startAngle: 200,
+        endAngle: -20,
+        min: 0,
+        max: 100,
+        axisLine: {
+          lineStyle: {
+            width: 16,
+            color: [
+              [0.3, '#d93b3b'],
+              [0.7, '#f5a623'],
+              [1, '#0fcb5e']
+            ]
+          }
+        },
+        // 刻度文字样式（0,10,20...100）
+        axisLabel: {
+        color: '#ffffff',    // 白色
+        distance: 12,         // 和环的距离
+        fontSize: 12
+        },
+
+        // 小刻度（短线）的样式
+        axisTick: {
+        length: 6,           // 短线长度
+        lineStyle: {
+            color: '#88cfff',  // 浅蓝
+            width: 2
+        }
+        },
+
+        // 大刻度（分段）长线的样式
+        splitLine: {
+        length: 10,          // 长线长度
+        lineStyle: {
+            color: '#00c3ff',  // 发光蓝
+            width: 2
+        }
+        },
+
+        pointer: { show: true },
+        detail: {
+          valueAnimation: true,
+          formatter: '{value} 分',
+          fontSize: 24,
+          color: '#fff',
+          offsetCenter: ['0%', '20%'] 
+        },
+        data: [{ value: data.score }]
+      }]
+    });
+  }
+
+  // 初次渲染
+  render();
+
+  // 点击“刷新”模拟取新数据
+  document.getElementById('refreshBtn').addEventListener('click', ()=>{
+    // 随机生成新数据
+    data = {
+      score: Math.round(60 + Math.random()*40),
+      temp: (18 + Math.random()*10).toFixed(1),
+      do:   (5 + Math.random()*5).toFixed(1),
+      ph:   (6 + Math.random()*2).toFixed(1),
+      turb: Math.round(1 + Math.random()*9)
+    };
+    render();
+  });
+
+  // 自适应
+  window.addEventListener('resize', ()=> gaugeChart.resize());
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flipclock/0.7.8/flipclock.min.js"></script>
+<script>
+    $(function() {
+      const $el    = $('#protectedFishClock');
+      const count  = 159485;                  // 目标值
+      const frames = 50;                      // 初始动画分成 50 帧
+      const duration = 50 * frames;           // 总时长 = 帧数 × 50ms = 2500ms
+      const step   = Math.ceil(count / frames);
+      
+      // 1) 先创建一个从 0 开始的 FlipClock
+      const clock = new FlipClock($el, 0, {
+        clockFace: 'Counter',
+        autoStart: false,
+        minimumDigits: count.toString().length
+      });
+      
+      // 2) 初始动画：分 frames 步，把数字从 0 跑到 count
+      let current = 0, frame = 0;
+      const anim = setInterval(() => {
+        frame++;
+        current += step;
+        if (frame >= frames || current >= count) {
+          clock.setValue(count);
+          clearInterval(anim);
+          // —— 在动画结束后，延迟一下再启动自增 —— //
+          setTimeout(startAutoIncrement, 500);
+        } else {
+          clock.setValue(current);
+        }
+      }, 50);
+    
+      // 3) 定义一个函数：每 10s 自增 1
+      function startAutoIncrement() {
+        setInterval(() => {
+        clock.increment();  // 只 +1
+        }, 10000);
+      }
+    });
+    </script>
+
+
+{% endblock %}
+
